@@ -5,6 +5,7 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Prisma, User } from '@prisma/client'; // Prisma 타입 가져오기
 import { RBAC, Role } from 'src/auth/decorators/rbac.decorator';
 import { RBACGuard } from 'src/auth/guards/rbac.guard';
+import {} from '@nestjs/swagger';
 
 @Controller('users')
 export class UsersController {

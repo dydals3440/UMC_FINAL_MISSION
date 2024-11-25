@@ -7,9 +7,11 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('common')
+@ApiBearerAuth()
 export class CommonController {
   @Post('image')
   @UseGuards(JwtAuthGuard)
