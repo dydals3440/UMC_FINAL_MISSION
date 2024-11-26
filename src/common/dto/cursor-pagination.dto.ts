@@ -26,7 +26,7 @@ export class CursorPaginationDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  order: string[] = ['id_DESC'];
+  order: string[] = ['id_ASC'];
 
   @ApiProperty({
     type: 'number',
