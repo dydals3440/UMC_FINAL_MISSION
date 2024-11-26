@@ -4,34 +4,29 @@ import {
   Post,
   UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { ApiFile } from './decorators/api-file.decorator';
 
 @Controller('common')
-@ApiBearerAuth()
 export class CommonController {
   @Post('image')
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(
-    FileInterceptor('image', {
-      limits: {
-        fileSize: 20000000,
-      },
-      fileFilter(req, file, callback) {
-        if (file.mimetype !== 'image/png') {
-          return callback(
-            new BadRequestException('PNG 타입의 파일만 업로드 가능합니다.'),
-            false,
-          );
-        }
+  @ApiFile('image', {
+    limits: {
+      fileSize: 20000000,
+    },
+    fileFilter(req, file, callback) {
+      if (file.mimetype !== 'image/png') {
+        return callback(
+          new BadRequestException('PNG 타입의 파일만 업로드 가능합니다.'),
+          false,
+        );
+      }
 
-        return callback(null, true);
-      },
-    }),
-  )
+      return callback(null, true);
+    },
+  })
   createImage(@UploadedFile() image: Express.Multer.File) {
     return {
       imageUrl: image.filename,

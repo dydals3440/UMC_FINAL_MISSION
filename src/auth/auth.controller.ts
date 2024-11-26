@@ -6,11 +6,14 @@ import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { ApiBody, ApiCookieAuth } from '@nestjs/swagger';
+import { UserLoginDto } from './dto/user-login.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiBody({ type: UserLoginDto })
   @Post('login')
   @UseGuards(LocalAuthGuard)
   async login(
@@ -20,6 +23,7 @@ export class AuthController {
     await this.authService.login(user, response);
   }
 
+  @ApiCookieAuth()
   @Post('refresh')
   @UseGuards(JwtRefreshAuthGuard)
   async refreshToken(
@@ -30,6 +34,7 @@ export class AuthController {
     return await this.authService.login(user, response);
   }
 
+  @ApiCookieAuth()
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   async logout(

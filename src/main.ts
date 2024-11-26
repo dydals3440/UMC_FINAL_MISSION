@@ -17,16 +17,25 @@ async function bootstrap() {
   });
 
   const config = new DocumentBuilder()
+    .addSecurity('accessToken', {
+      type: 'apiKey',
+      in: 'cookie',
+      name: 'accessToken',
+    })
+    .addSecurity('refreshToken', {
+      type: 'apiKey',
+      in: 'cookie',
+      name: 'refreshToken',
+    })
     .setTitle('UMC_FINAL_PROJECT Swagger')
     .setDescription('UMC_FINAL_PROJECT')
     .setVersion('1.0')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-
   SwaggerModule.setup('doc', app, document, {
     swaggerOptions: {
-      persistAuthorization: true,
+      persistAuthorization: true, // 인증 정보를 유지
     },
   });
 

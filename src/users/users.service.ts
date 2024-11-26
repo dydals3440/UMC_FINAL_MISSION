@@ -15,6 +15,10 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateUserRequest) {
+    if (data.role !== 'user' && data.role !== 'admin') {
+      throw new ConflictException('role은 user 또는 admin만 가능합니다.');
+    }
+
     const user = await this.prisma.user.findUnique({
       where: {
         email: data.email,
