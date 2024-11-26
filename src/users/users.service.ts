@@ -8,12 +8,13 @@ import { Prisma, User } from '@prisma/client'; // Prisma 타입 가져오기
 
 import { hash } from 'bcryptjs';
 import { PrismaService } from 'src/common/prisma.service';
+import { CreateUserRequest } from './dto/create-user.request';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: Prisma.UserCreateInput) {
+  async create(data: CreateUserRequest) {
     const user = await this.prisma.user.findUnique({
       where: {
         email: data.email,
