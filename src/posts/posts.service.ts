@@ -10,7 +10,7 @@ export class PostsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(dto: GetPostsDto, userId?: number) {
-    const { title, cursor, take = 2, order = ['id_DESC'] } = dto;
+    const { title, cursor, take = 2, order = ['id_ASC'] } = dto;
 
     const takeValue = isNaN(Number(take)) ? 2 : Number(take);
 
