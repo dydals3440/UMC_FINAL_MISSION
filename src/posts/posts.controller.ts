@@ -24,6 +24,7 @@ import {
 } from '@nestjs/swagger';
 import { CreatePostsDto } from './dto/create-posts.dto';
 import { Post as EPost } from './entity/post.entity';
+import { GetPostsResponseDto } from './dto/get-posts-response.dto';
 
 @ApiTags('posts')
 @Controller('posts')
@@ -51,10 +52,11 @@ export class PostsController {
     summary: '게시글 목록 조회',
     description: '게시글 목록을 가져옵니다. (비로그인도 사용가능)',
   })
-  @ApiOkResponse({ type: EPost, isArray: true })
+  @ApiOkResponse({ type: GetPostsResponseDto })
   getPosts(@Query() dto: GetPostsDto, @CurrentUser() user: User) {
     return this.postService.findAll(dto, user?.id);
   }
+
   @Get(':id')
   @ApiOperation({
     summary: '게시글 단일 조회',
