@@ -12,8 +12,6 @@ export class PostsService {
   async findAll(dto: GetPostsDto, userId?: number) {
     const { title, cursor, take = 2, order = ['id_ASC'] } = dto;
 
-    const takeValue = isNaN(Number(take)) ? 2 : Number(take);
-
     // orderBy 변환
     const orderBy = order.map((field) => {
       const [column, direction] = field.split('_');
@@ -24,8 +22,8 @@ export class PostsService {
     const posts = await this.prisma.post.findMany({
       where: title ? { title: { contains: title } } : {},
       cursor: cursor ? { id: parseInt(cursor) } : undefined,
-      take: takeValue + 1, // 커서를 처리하기 위해 한 개 더 가져옴
-      skip: cursor ? 1 : 0, // 커서가 있으면 첫 번째 항목은 스킵
+      take: take + 1, // 커서를 처리하기 위해 한 개 더 가져옴
+      skip: cursor ? 1 : undefined, // 커서가 있으면 첫 번째 항목은 스킵
       orderBy,
       include: {
         likedUsers: {
