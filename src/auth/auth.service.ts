@@ -63,14 +63,14 @@ export class AuthService {
       },
     );
     response.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
+      httpOnly: false,
       // production 환경에서만 secure 속성을 true로 설정합니다.
       secure: this.configService.get('NODE_ENV') === 'production',
       expires: expiresRefreshToken,
     });
 
     response.cookie('accessToken', accessToken, {
-      httpOnly: true,
+      httpOnly: false,
       // production 환경에서만 secure 속성을 true로 설정합니다.
       secure: this.configService.get('NODE_ENV') === 'production',
       expires: expiresAccessToken,
@@ -123,14 +123,14 @@ export class AuthService {
 
     // 쿠키 삭제 - 생성 시 사용한 옵션과 동일하게 설정
     response.clearCookie('refreshToken', {
-      httpOnly: true,
+      httpOnly: false,
       secure: this.configService.get('NODE_ENV') === 'production',
       sameSite: 'strict', // 생성 시의 sameSite 옵션과 동일
       path: '/', // 쿠키 생성 시 설정된 path
     });
 
     response.clearCookie('accessToken', {
-      httpOnly: true,
+      httpOnly: false,
       secure: this.configService.get('NODE_ENV') === 'production',
       sameSite: 'strict',
       path: '/',
