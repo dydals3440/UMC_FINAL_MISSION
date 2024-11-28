@@ -22,7 +22,7 @@ export class PostsService {
     const posts = await this.prisma.post.findMany({
       where: title ? { title: { contains: title } } : {},
       cursor: cursor ? { id: parseInt(cursor) } : undefined,
-      take: take + 1, // 커서를 처리하기 위해 한 개 더 가져옴
+      take: Number(take + 1), // 커서를 처리하기 위해 한 개 더 가져옴
       skip: cursor ? 1 : undefined, // 커서가 있으면 첫 번째 항목은 스킵
       orderBy,
       include: {
@@ -90,37 +90,6 @@ export class PostsService {
       nextCursor,
       hasNextPage,
     };
-  }
-
-  async create(
-    request: Pick<Prisma.PostCreateInput, 'title' | 'content' | 'imageUrl'>,
-    userId: number,
-  ) {
-    // TODO: image 추가
-    return this.prisma.$transaction(async (prisma) => {
-      const imageFolder = join('public', 'image');
-      const tempFolder = join('public', 'temp');
-
-      const post = await prisma.post.create({
-        data: {
-          title: request.title,
-          imageUrl: request.imageUrl
-            ? join(imageFolder, request.imageUrl)
-            : null,
-          content: request.content,
-          author: { connect: { id: userId } },
-        },
-      });
-
-      if (request.imageUrl) {
-        await rename(
-          join(process.cwd(), tempFolder, request.imageUrl),
-          join(process.cwd(), imageFolder, request.imageUrl),
-        );
-      }
-
-      return post;
-    });
   }
 
   async findOne(id: number) {
@@ -269,12 +238,46 @@ export class PostsService {
     };
   }
 
+  async create(
+    request: Pick<Prisma.PostCreateInput, 'title' | 'content' | 'imageUrl'>,
+    userId: number,
+  ) {
+    // TODO: image 추가
+    return this.prisma.$transaction(async (prisma) => {
+      const imageFolder = join('public', 'image');
+      const tempFolder = join('public', 'temp');
+
+      const post = await prisma.post.create({
+        data: {
+          title: request.title,
+          imageUrl: request.imageUrl
+            ? join(imageFolder, request.imageUrl)
+            : null,
+          content: request.content,
+          author: { connect: { id: userId } },
+        },
+      });
+
+      if (request.imageUrl) {
+        await rename(
+          join(process.cwd(), tempFolder, request.imageUrl),
+          join(process.cwd(), imageFolder, request.imageUrl),
+        );
+      }
+
+      return post;
+    });
+  }
+
   async update(
     id: number,
     request: Pick<Prisma.PostUpdateInput, 'imageUrl' | 'content' | 'title'>,
     userId: number,
   ) {
     return this.prisma.$transaction(async (prisma) => {
+      const imageFolder = join('public', 'image');
+      const tempFolder = join('public', 'temp');
+
       const post = await prisma.post.findUnique({
         where: { id },
       });
@@ -291,13 +294,22 @@ export class PostsService {
         where: { id },
         data: {
           title: request.title,
+          imageUrl: request.imageUrl
+            ? join(imageFolder, request.imageUrl as string)
+            : null,
           content: request.content,
-          imageUrl: request.imageUrl,
           version: {
             increment: 1,
           },
         },
       });
+
+      if (request.imageUrl) {
+        await rename(
+          join(process.cwd(), tempFolder, request.imageUrl as string),
+          join(process.cwd(), imageFolder, request.imageUrl as string),
+        );
+      }
 
       return prisma.post.findUnique({
         where: { id },
