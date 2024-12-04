@@ -12,18 +12,30 @@ export class PostsService {
   async findAll(dto: GetPostsDto, userId?: number) {
     const { title, cursor, take = 2, order = ['id_ASC'] } = dto;
 
-    // orderBy 변환
+    // `orderBy` 변환: 필드와 방향 분리 후 소문자로 변환
     const orderBy = order.map((field) => {
       const [column, direction] = field.split('_');
-      return { [column]: direction.toLowerCase() }; // 소문자로 변환하여 Prisma 쿼리 사용
+      return { [column]: direction.toLowerCase() };
     });
 
-    // Prisma 쿼리 작성
+    // 유효한 커서 검증
+    const validCursor = cursor
+      ? await this.prisma.post.findFirst({
+          where: { id: parseInt(cursor) },
+          select: { id: true },
+        })
+      : null;
+
+    // Prisma 쿼리
     const posts = await this.prisma.post.findMany({
-      where: title ? { title: { contains: title } } : {},
-      cursor: cursor ? { id: parseInt(cursor) } : undefined,
-      take: Number(take + 1), // 커서를 처리하기 위해 한 개 더 가져옴
-      skip: cursor ? 1 : undefined, // 커서가 있으면 첫 번째 항목은 스킵
+      where: {
+        AND: [
+          title ? { title: { contains: title } } : {},
+          validCursor ? { id: { gte: parseInt(cursor) } } : {},
+        ],
+      },
+      take: Number(take) + 1, // 한 개 더 가져오기
+      skip: validCursor ? 1 : 0, // 커서가 유효하면 첫 항목 스킵
       orderBy,
       include: {
         likedUsers: {
@@ -40,13 +52,15 @@ export class PostsService {
       },
     });
 
+    // 다음 페이지 여부 판단
     const hasNextPage = posts.length > take;
 
-    // 마지막 항목을 제거하여 페이지네이션 구현
+    // 마지막 항목 제거하여 페이지네이션 구현
     if (hasNextPage) posts.pop();
 
+    // 다음 커서 계산
     const nextCursor = hasNextPage
-      ? posts[posts.length - 1].id.toString()
+      ? posts[posts.length - 1]?.id.toString()
       : null;
 
     // 유저가 있을 경우, 좋아요 정보 추가
@@ -78,13 +92,14 @@ export class PostsService {
       return {
         data: posts.map((post) => ({
           ...post,
-          likeStatus: likedPostsMap[post.id] ?? null, // likeStatus 추가
+          likeStatus: likedPostsMap[post.id] ?? null, // 좋아요 상태 추가
         })),
         nextCursor,
         hasNextPage,
       };
     }
 
+    // 기본 응답 반환
     return {
       data: posts,
       nextCursor,
